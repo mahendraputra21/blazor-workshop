@@ -3,11 +3,15 @@
 
 <div class="main">
     <ul class="pizza-cards">
+        @if (showingConfigureDialog)
+        {
+            <ConfigurePizzaDialog Pizza="configuringPizza" />
+        }
         @if (specials is not null)
         {
             @foreach (var special in specials)
             {
-                <li style="background-image: url('@special.ImageUrl')">
+                <li @onclick="@(() => ShowConfigurePizzaDialog(special))" style="background-image: url('@special.ImageUrl')">
                     <div class="pizza-info">
                         <span class="title">@special.Name</span>
                         @special.Description
@@ -25,9 +29,24 @@
 
 @code {
     List<PizzaSpecial>? specials;
+    Pizza? configuringPizza;
+    bool showingConfigureDialog;
 
     protected override async Task OnInitializedAsync()
     {
         specials = await HttpClient.GetFromJsonAsync<List<PizzaSpecial>>("specials", BlazingPizza.OrderContext.Default.ListPizzaSpecial);
+    }
+
+    void ShowConfigurePizzaDialog(PizzaSpecial special)
+    {
+        configuringPizza = new Pizza()
+        {
+            Special = special,
+            SpecialId = special.Id,
+            Size = Pizza.DefaultSize,
+            Toppings = new List<PizzaTopping>()
+        };
+
+        showingConfigureDialog = true;
     }
 }
